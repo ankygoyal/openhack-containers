@@ -126,8 +126,8 @@ az login
 
 ## Tag the Images
 ```
-docker tag tripinsights/poi:1.0 registryncl1796.azurecr.io/tripinsights/poi:1.0
-docker tag tripinsights/trips:1.0 registryncl1796.azurecr.io/tripinsights/trips:1.0
+docker tag tripinsights/poi:1.0 registryncl1796.azurecr.io/tripinsights/poi/v1
+docker tag tripinsights/trips:1.0 registryncl1796.azurecr.io/tripinsights/trips/v1
 docker tag tripinsights/tripviewer:1.0 registryncl1796.azurecr.io/tripinsights/tripviewer:1.0
 docker tag tripinsights/userprofile:1.0 registryncl1796.azurecr.io/tripinsights/userprofile:1.0
 docker tag tripinsights/user-java:1.0 registryncl1796.azurecr.io/tripinsights/user-java:1.0
@@ -206,9 +206,206 @@ spec:
     port: 8080
 ```
 
+## Tripview Yaml
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tripviewer
+  labels:
+    app: tripviewer
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tripviewer
+  template:
+    metadata:
+      labels:
+        app: tripviewer
+    spec:
+      containers:
+      - name: tripviewer
+        image: registryncl1796.azurecr.io/tripinsights/tripviewer/v1
+      - env:
+        - name: SQL_PASSWORD
+          value: zC8yn3Hf7
+        - name: SQL_USER
+          value: sqladminnCl1796
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Production
+        - name: SQL_SERVER
+          value: sqlserverncl1796.database.windows.net
+        - name: USERPROFILE_API_ENDPOINT
+          value: http://userprofile.default.svc.cluster.local:8080
+        - name: TRIPS_API_ENDPOINT
+          value: http://trips.default.svc.cluster.local:8080
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tripviewer
+spec:
+  type: LoadBalancer
+  selector:
+    app: tripviewer
+  ports:
+  - protocol: TCP
+    targetPort: 80
+    port: 8080
+```
+
+## Trips yaml file
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trips
+  labels:
+    app: trips
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trips
+  template:
+    metadata:
+      labels:
+        app: trips
+    spec:
+      containers:
+      - name: trips
+        image: registryncl1796.azurecr.io/tripinsights/trips/v1
+        env:
+          - name: SQL_PASSWORD
+            value: zC8yn3Hf7
+          - name: SQL_USER
+            value: sqladminnCl1796
+          - name: ASPNETCORE_ENVIRONMENT
+            value: Production
+          - name: SQL_SERVER
+            value: sqlserverncl1796.database.windows.net
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trips
+spec:
+  type: LoadBalancer
+  selector:
+    app: trips
+  ports:
+  - protocol: TCP
+    targetPort: 80
+    port: 8080
+```
+
+## User API yaml file
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-java
+  labels:
+    app: user-java
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-java
+  template:
+    metadata:
+      labels:
+        app: user-java
+    spec:
+      containers:
+      - name: user-java
+        image: registryncl1796.azurecr.io/tripinsights/user-java/v1
+        env:
+          - name: SQL_PASSWORD
+            value: zC8yn3Hf7
+          - name: SQL_USER
+            value: sqladminnCl1796
+          - name: ASPNETCORE_ENVIRONMENT
+            value: Production
+          - name: SQL_SERVER
+            value: sqlserverncl1796.database.windows.net
+        ports:
+        - containerPort: 80
+---  
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-java
+spec:
+  type: LoadBalancer
+  selector:
+    app: user-java
+  ports:
+  - protocol: TCP
+    targetPort: 80
+    port: 8080
+```
+
+## User Profile yaml file
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userprofile
+  labels:
+    app: userprofile
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: userprofile
+  template:
+    metadata:
+      labels:
+        app: userprofile
+    spec:
+      containers:
+      - name: userprofile
+        image: registryncl1796.azurecr.io/tripinsights/userprofile/v1
+        env:
+          - name: SQL_PASSWORD
+            value: zC8yn3Hf7
+          - name: SQL_USER
+            value: sqladminnCl1796
+          - name: ASPNETCORE_ENVIRONMENT
+            value: Production
+          - name: SQL_SERVER
+            value: sqlserverncl1796.database.windows.net
+        ports:
+        - containerPort: 80
+---  
+apiVersion: v1
+kind: Service
+metadata:
+  name: userprofile
+spec:
+  type: LoadBalancer
+  selector:
+    app: userprofile
+  ports:
+  - protocol: TCP
+    targetPort: 80
+    port: 8080
+```
+
 ## Deploy the POI pods
 Save the above yml file into a file
 
 ```
-kubectl apply -f azure-vote.yaml
+kubectl apply -f poi.yaml
+kubectl apply -f tripview.yaml
+kubectl apply -f user-api.yaml
+kubectl apply -f user-profile.yaml
+kubectl apply -f trips.yaml
+
 ```
