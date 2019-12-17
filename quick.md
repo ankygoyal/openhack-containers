@@ -107,3 +107,37 @@ docker build -f ../../dockerfiles/Dockerfile_4 `
   .
 ```
 
+# Push the images to the ACR
+
+## Setup variables
+```
+$ACR_NAME = "registryncl1796"
+$ACR_USER = "registryncl1796"
+$ACR_PASSWORD = "u9vBIotELDhDA+egeYTkIFWnfG2gQq8u"  
+$ACR_SUFFIX = "registryncl1796.azurecr.io"
+$ACR_
+```
+
+
+## Login to the ACR
+```
+az login
+```
+
+## Tag the Images
+```
+docker tag tripinsights/poi:1.0 registryncl1796.azurecr.io/tripinsights/poi:1.0
+docker tag tripinsights/trips:1.0 registryncl1796.azurecr.io/tripinsights/trips:1.0
+docker tag tripinsights/tripviewer:1.0 registryncl1796.azurecr.io/tripinsights/tripviewer:1.0
+docker tag tripinsights/userprofile:1.0 registryncl1796.azurecr.io/tripinsights/userprofile:1.0
+docker tag tripinsights/user-java:1.0 registryncl1796.azurecr.io/tripinsights/user-java:1.0
+```
+
+## Push the Images
+```
+docker push registryncl1796.azurecr.io/tripinsights/poi:1.0
+docker push registryncl1796.azurecr.io/tripinsights/trips:1.0
+docker push registryncl1796.azurecr.io/tripinsights/tripviewer:1.0
+docker push registryncl1796.azurecr.io/tripinsights/userprofile:1.0
+docker push registryncl1796.azurecr.io/tripinsights/user-java:1.0
+```
