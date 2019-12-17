@@ -1,4 +1,4 @@
-# Quick Steps Guide
+# Excersice 1
 
 On a privileged PS ISE session run:
 
@@ -65,7 +65,7 @@ docker run --network bridge `
   -e SQLFQDN=$SQL_SERVER `
   -e SQLUSER=$SQL_USER `
   -e SQLPASS=$SQL_PASSWORD `
-  -e SQLDB=mydrivingDB `
+  -e SQLDB=$SQL_DB_NAME `
   openhack/data-load:v1
 ```
 
@@ -135,9 +135,80 @@ docker tag tripinsights/user-java:1.0 registryncl1796.azurecr.io/tripinsights/us
 
 ## Push the Images
 ```
-docker push registryncl1796.azurecr.io/tripinsights/poi:1.0
-docker push registryncl1796.azurecr.io/tripinsights/trips:1.0
-docker push registryncl1796.azurecr.io/tripinsights/tripviewer:1.0
-docker push registryncl1796.azurecr.io/tripinsights/userprofile:1.0
-docker push registryncl1796.azurecr.io/tripinsights/user-java:1.0
+docker push registryncl1796.azurecr.io/tripinsights/poi/v1
+docker push registryncl1796.azurecr.io/tripinsights/trips/v1
+docker push registryncl1796.azurecr.io/tripinsights/tripviewer/v1
+docker push registryncl1796.azurecr.io/tripinsights/userprofile/v1
+docker push registryncl1796.azurecr.io/tripinsights/user-java/v1
+```
+
+# Excersice 2
+## Enable AKS to pull images from ACR
+
+```
+az aks update -n HumongousInsurance -g teamResources --attach-acr registryncl1796
+```
+
+# Get Cluster credentials
+```
+az aks get-credentials --resource-group teamResources --name HumongousInsurance
+```
+
+# Validate Credentials and get nodes
+```
+kubectl get nodes
+```
+
+## POI Yaml
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poi
+  labels:
+    app: poi
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: poi
+  template:
+    metadata:
+      labels:
+        app: poi
+    spec:
+      containers:
+      - name: poi
+        image: registryncl1796.azurecr.io/tripinsights/poi/v1
+        env:
+          - name: SQL_PASSWORD
+            value: zC8yn3Hf7
+          - name: SQL_USER
+            value: sqladminnCl1796
+          - name: ASPNETCORE_ENVIRONMENT
+            value: Production
+          - name: SQL_SERVER
+            value: sqlserverncl1796.database.windows.net
+        ports:
+        - containerPort: 80
+---  
+apiVersion: v1
+kind: Service
+metadata:
+  name: poi
+spec:
+  type: LoadBalancer
+  selector:
+    app: poi
+  ports:
+  - protocol: TCP
+    targetPort: 80
+    port: 8080
+```
+
+## Deploy the POI pods
+Save the above yml file into a file
+
+```
+kubectl apply -f azure-vote.yaml
 ```
